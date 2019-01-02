@@ -1,0 +1,36 @@
+{
+    "name": "@chengaoyuan/redis-cache",
+    "version": "1.0.0",
+    "description": "使用redis实现CacheProtocol",
+    "main": "dist/index.js",
+    "scripts": {
+        "test": "mocha -r ts-register --recursive -R spec test/*.ts",
+        "build": "node del.js && tsc -d"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/GithubCGY/redis-cache.git"
+    },
+    "keywords": [
+        "redis",
+        "cache"
+    ],
+    "author": "chengaoyuan",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/GithubCGY/redis-cache/issues"
+    },
+    "homepage": "https://github.com/GithubCGY/redis-cache#readme",
+    "devDependencies": {
+        "@types/mocha": "^5.2.5",
+        "@types/node": "^10.12.12",
+        "@types/redis": "^2.8.10",
+        "mocha": "^5.2.0",
+        "redis": "^2.8.0",
+        "ts-node": "^7.0.1",
+        "typescript": "^3.2.2"
+    },
+    "files": [
+        "dist"
+    ]
+}
