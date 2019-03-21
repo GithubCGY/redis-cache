@@ -1,6 +1,6 @@
 {
     "name": "@chengaoyuan/redis-cache",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "使用redis实现CacheProtocol",
     "main": "dist/index.js",
     "scripts": {
