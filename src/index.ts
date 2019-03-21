@@ -121,4 +121,12 @@ export default class RedisCache implements CacheProtocol {
     lock(cache: string, key: string, expire: number, cb: (result: boolean) => void) {
         this._lock(`${cache}::${key}::LOCK`, expire, cb);
     }
+
+    unlock(cache: string, key: string) {
+        this.redisClient.del(`${cache}::${key}::LOCK`, err => {
+            if (err) {
+                this.logger.error(err);
+            }
+        });
+    }
 }
