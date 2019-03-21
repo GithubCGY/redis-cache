@@ -3,4 +3,5 @@ export default interface CacheProtocol {
     set(cache: string, key: string, expire: undefined | number, value: any): void;
     del(cache: string, key: string): void;
     clear(cache: string): void;
+    lock(cache: string, key: string, expire: number, cb: (result: boolean) => void): void;
 }
