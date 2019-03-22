@@ -17,6 +17,46 @@ interface ILogger {
     error(...args: any[]): void;
 }
 
+class RedisCacheLocker {
+    lockName: string;
+    locked: boolean;
+    redisCache: RedisCache;
+    constructor(redisCache: RedisCache, cache: string, key: string) {
+        this.lockName = `${cache}::${key}::LOCK`;
+        this.locked = false;
+        this.redisCache = redisCache;
+    }
+
+    lock(expire: number, cb: (result: boolean) => void) {
+        if (this.locked) {
+            throw new Error("Redis cache locker Repeated locking!!");
+        }
+        this.redisCache.redisClient.set(this.lockName, "1", "ex", expire, "nx", (err, reply) => {
+            if (err) {
+                this.redisCache.logger.error(err);
+                cb(false);
+            } else {
+                if (reply === "OK") {
+                    cb(true);
+                } else {
+                    this.lock(expire, cb);
+                }
+            }
+        });
+    }
+
+    unlock() {
+        if (!this.locked) {
+            return;
+        }
+        this.redisCache.redisClient.del(this.lockName, err => {
+            if (err) {
+                this.redisCache.logger.error(err);
+            }
+        });
+    }
+}
+
 export default class RedisCache implements CacheProtocol {
     readonly redisClient: RedisClient;
     readonly logger: ILogger;
@@ -103,30 +143,7 @@ export default class RedisCache implements CacheProtocol {
         });
     }
 
-    _lock(lock: string, expire: number, cb: (result: boolean) => void) {
-        this.redisClient.set(lock, "1", "ex", expire, "nx", (err, reply) => {
-            if (err) {
-                this.logger.error(err);
-                cb(false);
-            } else {
-                if (reply === "OK") {
-                    cb(true);
-                } else {
-                    this._lock(lock, expire, cb);
-                }
-            }
-        });
-    }
-
-    lock(cache: string, key: string, expire: number, cb: (result: boolean) => void) {
-        this._lock(`${cache}::${key}::LOCK`, expire, cb);
-    }
-
-    unlock(cache: string, key: string) {
-        this.redisClient.del(`${cache}::${key}::LOCK`, err => {
-            if (err) {
-                this.logger.error(err);
-            }
-        });
+    create_locker(cache: string, key: string) {
+        return new RedisCacheLocker(this, cache, key);
     }
 }
