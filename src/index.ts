@@ -31,15 +31,21 @@ class RedisCacheLocker {
         if (this.locked) {
             throw new Error("Redis cache locker Repeated locking!!");
         }
+        this.locked = true;
+        this._lock(expire, cb);
+    }
+
+    _lock(expire: number, cb: (result: boolean) => void) {
         this.redisCache.redisClient.set(this.lockName, "1", "ex", expire, "nx", (err, reply) => {
             if (err) {
                 this.redisCache.logger.error(err);
+                this.locked = false;
                 cb(false);
             } else {
                 if (reply === "OK") {
                     cb(true);
                 } else {
-                    this.lock(expire, cb);
+                    this._lock(expire, cb);
                 }
             }
         });
@@ -49,6 +55,7 @@ class RedisCacheLocker {
         if (!this.locked) {
             return;
         }
+        this.locked = false;
         this.redisCache.redisClient.del(this.lockName, err => {
             if (err) {
                 this.redisCache.logger.error(err);
